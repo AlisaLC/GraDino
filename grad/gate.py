@@ -1,5 +1,5 @@
 import numpy as np
-
+import graphviz
 
 class Gate:
     def __init__(self, name):
@@ -17,6 +17,17 @@ class Gate:
 
     def __call__(self, *args, **kwds):
         return self.forward(*args, **kwds)
+    
+    def draw_graph(self, graph):
+        for var in self.vars:
+            if not var.is_graph:
+                if var.gate is not None and var.gate.name == 'identity':
+                    graph.node(str(id(var)), f'{var.data:.4g}', style='filled', fillcolor='lightblue')
+                else:
+                    graph.node(str(id(var)), f'{var.data:.4g}')
+                var.is_graph = True
+            graph.edge(str(id(var)), str(id(self)), label=f'{var.grad:.4g}')
+            var.draw_graph(graph)
 
 
 class Identity(Gate):

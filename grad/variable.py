@@ -1,5 +1,6 @@
 import numpy as np
 from . import gate as g
+import graphviz
 
 is_grad_enabled = True
 
@@ -23,6 +24,7 @@ class Variable:
         else:
             self.gate = gate
         self.requires_grad = requires_grad
+        self.is_graph = False
 
     def __repr__(self):
         return f"{self.data}"
@@ -43,6 +45,25 @@ class Variable:
             grad = 1
         self.grad += grad
         self.gate.backward(grad)
+    
+    def draw_graph(self, graph=None):
+        if graph is None:
+            graph = graphviz.Digraph()
+        if not self.is_graph:
+            if self.gate is not None and self.gate.name == 'identity':
+                graph.node(str(id(self)), f'{self.data:.4g}', style='filled', fillcolor='lightblue')
+            else:
+                graph.node(str(id(self)), f'{self.data:.4g}')
+            self.is_graph = True
+        if self.gate is not None and self.gate.name != 'identity':
+            graph.node(str(id(self.gate)), self.gate.name, style='filled', fillcolor='lightgreen')
+            graph.edge(str(id(self.gate)), str(id(self)), label=f'{self.grad:.4g}')
+            self.gate.draw_graph(graph)
+        return graph
+    
+    def clear_graph(self):
+        self.is_graph = False
+
 
     def zero_grad(self):
         self.grad = 0
