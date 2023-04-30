@@ -50,7 +50,7 @@ class Variable:
         if graph is None:
             graph = graphviz.Digraph()
         if not self.is_graph:
-            if self.gate is not None and self.gate.name == 'identity':
+            if self.gate is not None and self.gate.name == 'identity' and self.requires_grad:
                 graph.node(str(id(self)), f'{self.data:.4g}', style='filled', fillcolor='lightblue')
             else:
                 graph.node(str(id(self)), f'{self.data:.4g}')

@@ -21,7 +21,7 @@ class Gate:
     def draw_graph(self, graph):
         for var in self.vars:
             if not var.is_graph:
-                if var.gate is not None and var.gate.name == 'identity':
+                if var.gate is not None and var.gate.name == 'identity' and var.requires_grad:
                     graph.node(str(id(var)), f'{var.data:.4g}', style='filled', fillcolor='lightblue')
                 else:
                     graph.node(str(id(var)), f'{var.data:.4g}')
