@@ -37,14 +37,20 @@ class Variable:
 
     def __str__(self):
         return str(self.data)
+    
+    def __format__(self, *args, **kwargs):
+        return self.data.__format__(*args, **kwargs)
 
-    def backward(self, grad=None):
+    def backward(self, grad=None, make_graph=False):
         if not self.requires_grad or not is_grad_enabled:
             return
         if grad is None:
-            grad = 1
+            if make_graph:
+                grad = Variable(1, requires_grad=False)
+            else:
+                grad = 1
         self.grad += grad
-        self.gate.backward(grad)
+        self.gate.backward(grad=grad, make_graph=make_graph)
     
     def draw_graph(self, graph=None):
         if graph is None:
@@ -66,10 +72,14 @@ class Variable:
     
     def clear_graph(self):
         self.is_graph = False
+        self.gate.clear_graph()
 
 
     def zero_grad(self):
+        if not self.requires_grad or not is_grad_enabled:
+            return
         self.grad = 0
+        self.gate.zero_grad()
 
     def __eq__(self, other):
         if not isinstance(other, Variable):
