@@ -57,7 +57,10 @@ class Variable:
             self.is_graph = True
         if self.gate is not None and self.gate.name != 'identity':
             graph.node(str(id(self.gate)), self.gate.name, style='filled', fillcolor='lightgreen')
-            graph.edge(str(id(self.gate)), str(id(self)), label=f'{self.grad:.4g}')
+            label = None
+            if self.requires_grad:
+                label = f'{self.grad:.4g}'
+            graph.edge(str(id(self.gate)), str(id(self)), label=label)
             self.gate.draw_graph(graph)
         return graph
     

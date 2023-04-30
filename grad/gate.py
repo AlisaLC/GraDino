@@ -26,7 +26,10 @@ class Gate:
                 else:
                     graph.node(str(id(var)), f'{var.data:.4g}')
                 var.is_graph = True
-            graph.edge(str(id(var)), str(id(self)), label=f'{var.grad:.4g}')
+            label = None
+            if var.requires_grad:
+                label = f'{var.grad:.4g}'
+            graph.edge(str(id(var)), str(id(self)), label=label)
             var.draw_graph(graph)
 
 
