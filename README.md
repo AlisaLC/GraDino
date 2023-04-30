@@ -31,17 +31,50 @@ print(vp.array_grad(y))
 * if we want to define a variable where there is no need for backpropagation we can set `requires_grad` attribute to `False`.
 * to zero the calculated gradients after applying optimization in each iteration, `zero_grad` method should be called on each `Variable`. to apply this in an array we can use `array_zero_grad` function.
 * to disable computation graph during optimization, `with vp.no_grad():` can be used.
+* `zero_grad` can be called on the final product to reset the gradients recursively.
+```python
+import grad
+from grad import variable as vp
+
+x = vn(1.0, requires_grad=True)
+y = vn(2.0, requires_grad=True)
+z = (x - y) ** 2
+z.backward()
+print(x.grad, y.grad) # -2.0 2.0
+z.zero_grad()
+print(x.grad, y.grad) # 0.0 0.0
+```
 ## Computational Graph Drawing
 to draw the computational graph of a `Variable` we can use `draw_graph` function. it uses `graphviz` library to draw the graph. the graph is returned as a `graphviz.Digraph` object.
 ```python
 import grad
 from grad import variable as vp
 
-x = vp(1.0, requires_grad=True)
-y = vp(2.0, requires_grad=True)
+x = vn(1.0, requires_grad=True)
+y = vn(2.0, requires_grad=True)
 z = (x - y) ** 2
 z.backward()
 g = z.draw_graph()
 g.view()
 ```
-![Computational Graph](comp_graph.png)
+<p align="center">
+  <img  src="comp_graph.png">
+</p>
+
+## Higher Order Derivatives
+to calculate higher order derivatives we can use `backward` method multiple times. the gradients are accumulated in `grad` property. `make_graph` argument on `backward` must be set to `True` to make the computational graph. after each `backward` we `zero_grad` to reset the gradients.
+```python
+import grad
+from grad import variable as vp
+
+x = vn(17.0, requires_grad=True)
+y = vn(13.0, requires_grad=True)
+z = (x - y) ** 2
+z.backward(make_graph=True)
+print(x.grad, y.grad) # 8.0 -8.0
+x_grad = x.grad # 2 * (x - y)
+z.zero_grad()
+x_grad.backward()
+print(x.grad, y.grad) # 2.0 -2.0
+```
+when `make_graph` is set to `True` the computational graph is made and stored in `graph` property of `Variable`. we can use `draw_graph` method to draw the graph.
